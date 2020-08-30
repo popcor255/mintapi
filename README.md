@@ -11,28 +11,10 @@ pip install mintapi
 
 `mintapi` scrapes Mint.com by navigating a Chrome browser (or Chromium) just as a human would. Once logged in, the API allows programatic access to various Mint REST APIs. Selenium/WebDriver is used to accomplish this, and specifically, ChromeDriver under the hood. `mintapi` will download the latest stable release of chromedriver, unless --use_chromedriver_on_path is given. **NOTE: You must have [Chrome](https://www.google.com/chrome/) or [Chromium](https://www.chromium.org/getting-involved/dev-channel/) installed, on the `stable` track, and be up-to-date!** If you run into a `SessionNotCreatedException` about "ChromeDriver only supports Chrome version XX", you need to [update Chrome](https://support.google.com/chrome/answer/95414).
 
-## Usage
-
-### from the command line
-
-From the command line, the most automated invocation will be:
-
-    python mintapi/api.py --keyring --headless you@example.com
-
-This will store your credentials securely in your system keyring, and use a
-headless (invisible) browser to log in and grab the account data. If this triggers
-an MFA prompt, you'll be prompted on the command line for your code, which by default
-goes to SMS unless you specify `--mfa-method=email`. This will also persist a browser
-session in $HOME/.mintapi/session to avoid an MFA in the future, unless you specify `--session-path=None`.
-
-If mfa-method is email and your email host provides IMAP access, you can specify your IMAP login details.
-This will automate the retrieval of the MFA code from your email and entering it into Mint.
-
 ### from Python
 
 From python, instantiate the Mint class (from the mintapi package) and you can
-make calls to retrieve account/budget information.  We recommend using the
-`keyring` library for persisting credentials.
+make calls to retrieve account/budget information.
 
 ```python
   import mintapi
@@ -110,13 +92,13 @@ Run it as a sub-process from your favorite language; `pip install mintapi` creat
                    [--budgets | --budget_hist] [--net-worth] [--extended-accounts] [--transactions]
                    [--extended-transactions] [--credit-score] [--credit-report] [--start-date [START_DATE]]
                    [--include-investment] [--skip-duplicates] [--show-pending]
-                   [--filename FILENAME] [--keyring] [--headless] [--attention]
+                   [--filename FILENAME] [--headless] [--attention]
                    [--mfa-method {sms,email}]
                    email [password]
 
     positional arguments:
       email                 The e-mail address for your Mint.com account (required)
-      password              The password for your Mint.com account (if not supplied, --keyring must be provided)
+      password              The password for your Mint.com account (if not supplied, must be provided)
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -146,7 +128,6 @@ Run it as a sub-process from your favorite language; `pip install mintapi` creat
       --filename FILENAME, -f FILENAME
                             write results to file. can be {csv,json} format.
                             default is to write to stdout.
-      --keyring             Use OS keyring for storing password information
       --headless            Whether to execute chromedriver with no visible
                             window.
 	  --use-chromedriver-on-path
@@ -166,7 +147,7 @@ Run it as a sub-process from your favorite language; `pip install mintapi` creat
       --attention.          Get notice if there are any accounts that need attention
 
 
-    >>> mintapi --keyring email@example.com
+    >>> mintapi email@example.com
     [
       {
         "accountName": "Chase Checking",
