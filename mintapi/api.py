@@ -304,6 +304,7 @@ def get_web_driver(email, password, headless=False, mfa_method=None,
     email_input.clear()
     email_input.send_keys(email)
     driver.find_element_by_id("ius-password").send_keys(password)
+
     driver.find_element_by_id("ius-sign-in-submit-btn").submit()
 
     # Wait until logged in, just in case we need to deal with MFA.
@@ -313,6 +314,10 @@ def get_web_driver(email, password, headless=False, mfa_method=None,
         # find_element_by_id while the page is still in transition.
         driver.implicitly_wait(1)
         time.sleep(1)
+
+        # Check if password is inccorect
+        if driver.find_element_by_id("ius-sign-in-error") is not None:
+            return driver, 404
 
         # bypass "Let's add your current mobile number" interstitial page
         try:
@@ -534,6 +539,9 @@ class Mint(object):
             wait_for_sync_timeout=wait_for_sync_timeout,
             use_chromedriver_on_path=use_chromedriver_on_path,
             chromedriver_download_path=chromedriver_download_path)
+        if self.status_message == 404:
+            logger.error("ERROR: parameters are incorrect")
+            return
         self.token = self.get_token()
 
     def get_token(self):
@@ -1097,11 +1105,6 @@ def main():
     import getpass
     import argparse
 
-    try:
-        import keyring
-    except ImportError:
-        keyring = None
-
     # Parse command-line arguments {{{
     cmdline = argparse.ArgumentParser()
     cmdline.add_argument(
@@ -1210,11 +1213,6 @@ def main():
         'be {csv,json} format. default is to write to '
         'stdout.')
     cmdline.add_argument(
-        '--keyring',
-        action='store_true',
-        help='Use OS keyring for storing password '
-        'information')
-    cmdline.add_argument(
         '--headless',
         action='store_true',
         help='Whether to execute chromedriver with no visible window.')
@@ -1271,10 +1269,6 @@ def main():
 
     options = cmdline.parse_args()
 
-    if options.keyring and not keyring:
-        cmdline.error('--keyring can only be used if the `keyring` '
-                      'library is installed.')
-
     try:  # python 2.x
         from __builtin__ import raw_input as input
     except ImportError:  # python 3
@@ -1290,18 +1284,9 @@ def main():
         # If the user did not provide an e-mail, prompt for it
         email = input("Mint e-mail: ")
 
-    if keyring and not password:
-        # If the keyring module is installed and we don't yet have
-        # a password, try prompting for it
-        password = keyring.get_password('mintapi', email)
-
     if not password:
         # If we still don't have a password, prompt for it
         password = getpass.getpass("Mint password: ")
-
-    if options.keyring:
-        # If keyring option is specified, save the password in the keyring
-        keyring.set_password('mintapi', email, password)
 
     if options.accounts_ext:
         options.accounts = True

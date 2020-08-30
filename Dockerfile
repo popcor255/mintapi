@@ -1,4 +1,4 @@
-FROM selenium/node-chrome
+FROM selenium/standalone-chrome
 
 USER root
 
@@ -12,9 +12,6 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install --upgrade pip
 
-RUN sudo apt-get install seahorse
-
-USER 1001
 
 #=================================
 # Install MINT API
